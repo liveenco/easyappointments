@@ -11,6 +11,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libzip-dev apache2-utils unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j "$(nproc)" gd mysqli zip \
+    && a2dismod mpm_event mpm_worker \
+    && a2enmod mpm_prefork \
     && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
     && rm -rf /var/lib/apt/lists/*
 
