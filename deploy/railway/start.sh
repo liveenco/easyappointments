@@ -32,4 +32,9 @@ Require valid-user
 APACHE
 fi
 
+# Normalize Apache modules at startup as well as at build time.
+a2dismod mpm_event mpm_worker
+a2enmod mpm_prefork
+apache2ctl configtest
+
 exec apache2-foreground
