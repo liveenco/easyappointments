@@ -11,8 +11,15 @@ umask 027
 : "${DB_PASSWORD:?DB_PASSWORD is required}"
 : "${EA_ENCRYPTION_KEY:?EA_ENCRYPTION_KEY is required}"
 
-for directory in backups cache logs sessions uploads; do
-    install -d -m 0750 -o www-data -g www-data "/var/www/html/storage/$directory"
+# Set permissions on the mounted volume and its application directories.
+storage_root=/var/www/html/storage
+for directory in "$storage_root" "$storage_root/backups" "$storage_root/cache" \
+    "$storage_root/logs" "$storage_root/sessions" "$storage_root/uploads"; do
+    install -d -m 0750 -o www-data -g www-data "$directory"
+    if ! runuser -u www-data -- test -w "$directory"; then
+        printf 'Storage directory is not writable by www-data: %s\n' "$directory" >&2
+        exit 1
+    fi
 done
 
 access_file=/etc/apache2/easyappointments-access.conf
