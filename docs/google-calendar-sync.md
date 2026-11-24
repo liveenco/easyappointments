@@ -24,6 +24,17 @@ You need to tell Google that your Easy!Appointments installation is allowed to a
    Replace `your-domain.com/easyappointments` with your actual installation URL.
 8. Click **Create**. Google will show you a **Client ID** and **Client Secret** — copy both.
 
+### OAuth data access
+
+In **Google Auth Platform → Data Access**, declare these two scopes for the integration:
+
+| Scope | What the provider authorizes |
+| --- | --- |
+| `https://www.googleapis.com/auth/calendar.calendarlist.readonly` | List calendars so the provider can select one. |
+| `https://www.googleapis.com/auth/calendar.events` | Read availability from events and create, update or delete events for synchronization. |
+
+The integration uses the selected calendar. The event grant is not limited by Google to that one calendar; it follows the provider's existing access rights. Neither scope allows sharing or deleting a calendar. Do not request the full `https://www.googleapis.com/auth/calendar` scope.
+
 ## Step 2: Configure Credentials in Easy!Appointments
 
 You can now configure the Google **Client ID** and **Client Secret** directly from the Easy!Appointments user interface (Backend **Settings** → **Google Calendar** section).
@@ -42,6 +53,12 @@ const GOOGLE_CLIENT_SECRET  = 'your-client-secret-here';
 2. Select a provider and click **Enable Sync**.
 3. A Google sign-in window will appear. Log in with the provider's Google account and grant permission.
 4. The sync is now active!
+
+### Reconnect an account that previously granted full Calendar access
+
+Changing the consent screen or deploying new code does **not** narrow an existing grant. After deploying this version, disable sync for the provider, then remove the app's access in [Google Account connections](https://myaccount.google.com/connections) and enable sync again. Revoking the grant can affect other providers connected with the same Google account and app; coordinate the reconnection with them. No new client ID or secret is needed.
+
+Before rolling out to other providers, use a test calendar to confirm that it appears in the selector and that creating, rescheduling and cancelling a test appointment updates its event. Verify that Google requests event management, not permission to share or delete calendars.
 
 ## Good to Know
 
