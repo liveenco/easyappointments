@@ -117,7 +117,10 @@ class Google_sync
         $this->client->setRedirectUri(site_url('google/oauth_callback'));
         $this->client->setPrompt('consent');
         $this->client->setAccessType('offline');
-        $this->client->addScope([Google_Service_Calendar::CALENDAR]);
+        $this->client->addScope([
+            Google_Service_Calendar::CALENDAR_CALENDARLIST_READONLY,
+            Google_Service_Calendar::CALENDAR_EVENTS,
+        ]);
 
         $this->service = new Google_Service_Calendar($this->client);
     }

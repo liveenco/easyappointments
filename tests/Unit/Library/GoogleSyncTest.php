@@ -78,6 +78,39 @@ class GoogleSyncTest extends TestCase
         return $method->invoke($google_sync, $event, 'calendar-id');
     }
 
+    public function testConsentRequestsOnlyCalendarListReadAndEventManagement(): void
+    {
+        require_once APPPATH . 'libraries/Google_sync.php';
+
+        $sync = (new ReflectionClass(Google_sync::class))->newInstanceWithoutConstructor();
+        $previous_settings = $GLOBALS['ea_test_settings'];
+        try {
+            setting(['google_client_id' => 'test-client', 'google_client_secret' => 'test-secret']);
+            $sync->initialize_clients();
+            $sync->initialize_clients(); // The client is also rebuilt before a token refresh.
+        } finally {
+            $GLOBALS['ea_test_settings'] = $previous_settings;
+        }
+
+        foreach ([null, '', 'a+b&c=d/%? ü'] as $state) {
+            parse_str(parse_url($sync->get_auth_url($state), PHP_URL_QUERY), $query);
+            $this->assertSame($state ?? '', $query['state'] ?? '');
+            $this->assertSame('0', $query['max_auth_age']);
+        }
+
+        $this->assertEqualsCanonicalizing(
+            [
+                'https://www.googleapis.com/auth/calendar.calendarlist.readonly',
+                'https://www.googleapis.com/auth/calendar.events',
+            ],
+            explode(' ', $query['scope']),
+        );
+        $this->assertFalse(filter_var($query['include_granted_scopes'] ?? false, FILTER_VALIDATE_BOOLEAN));
+        $this->assertSame('offline', $query['access_type']);
+        $this->assertSame('consent', $query['prompt']);
+        $this->assertSame(site_url('google/oauth_callback'), $query['redirect_uri']);
+    }
+
     public function testMeetingLinkIsReadFromTheResponse()
     {
         $event = $this->event($this->conference_data('https://meet.google.com/abc-defg-hij', 'success'));

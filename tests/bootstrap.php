@@ -25,6 +25,11 @@ $GLOBALS['ea_test_records'] = [];
 $GLOBALS['ea_test_secretary_providers'] = [];
 $GLOBALS['ea_test_settings'] = [];
 
+function site_url(string $path): string
+{
+    return 'https://appointments.example.test/' . ltrim($path, '/');
+}
+
 function session(?string $key = null, $default = null)
 {
     return $GLOBALS['ea_test_session'][$key] ?? $default;
